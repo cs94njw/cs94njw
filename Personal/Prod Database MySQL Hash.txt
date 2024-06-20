@@ -1,0 +1,3 @@
+nicholas.wright@Nicholas-Wright mysql-hash-1.0.1 % go run main.go -generate
+password:	LKLbIXCFaJfKFQFRGObUKfURUbSTIRbU
+hash:		*8A370D9CF0CBC122B387338BD435FDA9A0F6093F   
