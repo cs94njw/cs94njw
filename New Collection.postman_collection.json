@@ -1,0 +1,1013 @@
+{
+	"info": {
+		"_postman_id": "73afcb54-0a72-468e-8f7b-7661e0c56d4c",
+		"name": "New Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "829803"
+	},
+	"item": [
+		{
+			"name": "Authentication scxript",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const environmentVariables = {",
+							"    \"dev\" : {",
+							"        \"authUrl\" : \"https://api.dev.nutmeg.co.uk/users/authenticate\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_DEV\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_DEV\"",
+							"    },",
+							"    \"prod\" : {",
+							"        \"authUrl\" : \"https://api.nutmeg.com/users/authenticate\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_PROD\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_PROD\"",
+							"    }",
+							"}",
+							"",
+							"const environments = [\"dev\", \"prod\"]",
+							"",
+							"function refreshAuthToken() {",
+							"",
+							"    const postRequest = {",
+							"        url: globalVariables[\"authUrl\"],",
+							"        method: 'POST',",
+							"        header: {",
+							"            'Content-Type': 'application/json'",
+							"        },",
+							"        body: {",
+							"            mode: 'raw',",
+							"            raw: JSON.stringify({",
+							"                email: pm.globals.get(\"TOKEN_USERNAME\"),",
+							"                password: pm.globals.get(\"TOKEN_PASSWORD\")",
+							"            })",
+							"        }",
+							"    };",
+							"",
+							"    pm.sendRequest(postRequest, (error, response) => {",
+							"        if (error) {",
+							"            console.log(error)",
+							"        } else {",
+							"            console.log(\"Got auth token\")",
+							"            const responseBody = response.json()",
+							"            pm.globals.set(globalVariables[\"tokenExpires\"], responseBody[\"expiresOn\"])",
+							"            pm.globals.set(globalVariables[\"accessToken\"], responseBody[\"accessToken\"])",
+							"            // set access token on outgoing request",
+							"            pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + responseBody[\"accessToken\"]",
+							"            });",
+							"        }",
+							"    });",
+							"}",
+							"",
+							"function tokenIsExpired(tokenExpiryTime) {",
+							"    const currentTimeSeconds = parseInt(new Date().getTime() / 1000)",
+							"    return parseInt(tokenExpiryTime) <= currentTimeSeconds ?",
+							"        true :",
+							"        false;",
+							"}",
+							"",
+							"function isNutmegUrl() {",
+							"    return pm.request.url.host.includes(\"nutmeg\")",
+							"}",
+							"",
+							"function getEnvironmentFromRequestUrl() {",
+							"    const url = pm.request.url.host;",
+							"",
+							"",
+							"    return url.includes(\"dev\") ?",
+							"        \"dev\" :",
+							"        \"prod\";",
+							"}",
+							"",
+							"/*",
+							"* SCRIPT START",
+							"*",
+							"*/",
+							"",
+							"if (isNutmegUrl()) {",
+							"",
+							"    globalVariables = environmentVariables[getEnvironmentFromRequestUrl()]",
+							"    const tokenExpiryTime = pm.globals.get(globalVariables[\"tokenExpires\"])",
+							"",
+							"    if (tokenExpiryTime == null || isNaN(parseInt(tokenExpiryTime)) || tokenIsExpired(tokenExpiryTime)) {",
+							"        console.log(\"Token has expired or can't be read, requesting a new one\")",
+							"        refreshAuthToken()",
+							"    } else {",
+							"        console.log(\"Auth token still valid, not requesting a new one\")",
+							"         pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + pm.globals.get(globalVariables[\"accessToken\"])",
+							"            });",
+							"    }",
+							"} else {",
+							"    console.log(\"Not setting auth token as url is not nutmeg related\")",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Prod React Authorization Token for Internal React Screens Copy",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\":\"nicholas.wright@nutmeg.com\",\n    \"password\":\"M4a?4zKD$gFu7@n\",\n    \"market\":\"gb\",\n    \"organisation\":\"nutmeg\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://nm-authentication-service.dev.nutmeg.co.uk/users/authenticate_employee",
+					"protocol": "https",
+					"host": [
+						"nm-authentication-service",
+						"dev",
+						"nutmeg",
+						"co",
+						"uk"
+					],
+					"path": [
+						"users",
+						"authenticate_employee"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Dev API Authorization Token for APIs",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://nm-test-token-service.dev.nutmeg.co.uk/test/token/staff?organisation=nutmeg",
+					"protocol": "https",
+					"host": [
+						"nm-test-token-service",
+						"dev",
+						"nutmeg",
+						"co",
+						"uk"
+					],
+					"path": [
+						"test",
+						"token",
+						"staff"
+					],
+					"query": [
+						{
+							"key": "organisation",
+							"value": "nutmeg"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create new CCT on NM-CASH-ALLOCATION",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Call Apply Cash Transfer on NM-CASH-ALLOCATION",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const environmentVariables = {",
+							"    \"dev\" : {",
+							"        \"authUrl\" : \"https://api.dev.nutmeg.co.uk/users/authenticate\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_DEV\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_DEV\"",
+							"    },",
+							"    \"prod\" : {",
+							"        \"authUrl\" : \"https://api.nutmeg.com/users/authenticate\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_PROD\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_PROD\"",
+							"    }",
+							"}",
+							"",
+							"const environments = [\"dev\", \"prod\"]",
+							"",
+							"function refreshAuthToken() {",
+							"",
+							"    const postRequest = {",
+							"        url: globalVariables[\"authUrl\"],",
+							"        method: 'POST',",
+							"        header: {",
+							"            'Content-Type': 'application/json'",
+							"        },",
+							"        body: {",
+							"            mode: 'raw',",
+							"            raw: JSON.stringify({",
+							"                email: pm.globals.get(\"TOKEN_USERNAME\"),",
+							"                password: pm.globals.get(\"TOKEN_PASSWORD\")",
+							"            })",
+							"        }",
+							"    };",
+							"",
+							"    pm.sendRequest(postRequest, (error, response) => {",
+							"        if (error) {",
+							"            console.log(error)",
+							"        } else {",
+							"            console.log(\"Got auth token\")",
+							"            const responseBody = response.json()",
+							"            pm.globals.set(globalVariables[\"tokenExpires\"], responseBody[\"expiresOn\"])",
+							"            pm.globals.set(globalVariables[\"accessToken\"], responseBody[\"accessToken\"])",
+							"            // set access token on outgoing request",
+							"            pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + responseBody[\"accessToken\"]",
+							"            });",
+							"        }",
+							"    });",
+							"}",
+							"",
+							"function tokenIsExpired(tokenExpiryTime) {",
+							"    const currentTimeSeconds = parseInt(new Date().getTime() / 1000)",
+							"    return parseInt(tokenExpiryTime) <= currentTimeSeconds ?",
+							"        true :",
+							"        false;",
+							"}",
+							"",
+							"function isNutmegUrl() {",
+							"    return true;",
+							"}",
+							"",
+							"function getEnvironmentFromRequestUrl() {",
+							"    const url = pm.request.url.host;",
+							"",
+							"",
+							"    return \"dev\";",
+							"}",
+							"",
+							"/*",
+							"* SCRIPT START",
+							"*",
+							"*/",
+							"",
+							"if (isNutmegUrl()) {",
+							"",
+							"    globalVariables = environmentVariables[getEnvironmentFromRequestUrl()]",
+							"    const tokenExpiryTime = pm.globals.get(globalVariables[\"tokenExpires\"])",
+							"",
+							"    if (tokenExpiryTime == null || isNaN(parseInt(tokenExpiryTime)) || tokenIsExpired(tokenExpiryTime)) {",
+							"        console.log(\"Token has expired or can't be read, requesting a new one\")",
+							"        refreshAuthToken()",
+							"    } else {",
+							"        console.log(\"Auth token still valid, not requesting a new one\")",
+							"         pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + pm.globals.get(globalVariables[\"accessToken\"])",
+							"            });",
+							"    }",
+							"} else {",
+							"    console.log(\"Not setting auth token as url is not nutmeg related\")",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"effectiveDate\": \"20230503\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://nm-cash-allocation-service.dev.nutmeg.co.uk/operations/apply_cash_transfer",
+					"protocol": "http",
+					"host": [
+						"nm-cash-allocation-service",
+						"dev",
+						"nutmeg",
+						"co",
+						"uk"
+					],
+					"path": [
+						"operations",
+						"apply_cash_transfer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PROD Call Apply Cash Transfer on NM-CASH-ALLOCATION Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const environmentVariables = {",
+							"    \"dev\" : {",
+							"        \"authUrl\" : \"https://api.dev.nutmeg.co.uk/users/authenticate\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_DEV\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_DEV\"",
+							"    },",
+							"    \"prod\" : {",
+							"        \"authUrl\" : \"https://nm-authentication-service.prod.nutmeg.co.uk/users/authenticate_employee\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_PROD\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_PROD\"",
+							"    }",
+							"}",
+							"",
+							"const environments = [\"dev\", \"prod\"]",
+							"",
+							"function refreshAuthToken() {",
+							"",
+							"    const postRequest = {",
+							"        url: globalVariables[\"authUrl\"],",
+							"        method: 'POST',",
+							"        header: {",
+							"            'Content-Type': 'application/json'",
+							"        },",
+							"        body: {",
+							"            mode: 'raw',",
+							"            raw: JSON.stringify({",
+							"                username: pm.globals.get(\"TOKEN_USERNAME\"),",
+							"                password: pm.globals.get(\"TOKEN_PASSWORD\"),",
+							"                market:\"gb\",",
+							"                organisation:\"nutmeg\"",
+							"            })",
+							"        }",
+							"    };",
+							"",
+							"    pm.sendRequest(postRequest, (error, response) => {",
+							"        if (error) {",
+							"            console.log(error)",
+							"        } else {",
+							"            console.log(\"Got auth token\")",
+							"            const responseBody = response.json()",
+							"            pm.globals.set(globalVariables[\"tokenExpires\"], responseBody[\"expiresOn\"])",
+							"            pm.globals.set(globalVariables[\"accessToken\"], responseBody[\"accessToken\"])",
+							"            // set access token on outgoing request",
+							"            pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + responseBody[\"accessToken\"]",
+							"            });",
+							"        }",
+							"    });",
+							"}",
+							"",
+							"function tokenIsExpired(tokenExpiryTime) {",
+							"    const currentTimeSeconds = parseInt(new Date().getTime() / 1000)",
+							"    return parseInt(tokenExpiryTime) <= currentTimeSeconds ?",
+							"        true :",
+							"        false;",
+							"}",
+							"",
+							"function isNutmegUrl() {",
+							"    return true;",
+							"}",
+							"",
+							"function getEnvironmentFromRequestUrl() {",
+							"    const url = pm.request.url.host;",
+							"",
+							"    return url.includes(\"dev\") ?",
+							"        \"dev\" :",
+							"        \"prod\";",
+							"}",
+							"",
+							"/*",
+							"* SCRIPT START",
+							"*",
+							"*/",
+							"",
+							"if (isNutmegUrl()) {",
+							"",
+							"    globalVariables = environmentVariables[getEnvironmentFromRequestUrl()]",
+							"    const tokenExpiryTime = pm.globals.get(globalVariables[\"tokenExpires\"])",
+							"",
+							"    if (tokenExpiryTime == null || isNaN(parseInt(tokenExpiryTime)) || tokenIsExpired(tokenExpiryTime)) {",
+							"        console.log(\"Token has expired or can't be read, requesting a new one\")",
+							"        refreshAuthToken()",
+							"    } else {",
+							"        console.log(\"Auth token still valid, not requesting a new one\")",
+							"         pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + pm.globals.get(globalVariables[\"accessToken\"])",
+							"            });",
+							"    }",
+							"} else {",
+							"    console.log(\"Not setting auth token as url is not nutmeg related\")",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"effectiveDate\": \"20230515\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://nm-cash-allocation-service.prod.nutmeg.co.uk/operations/apply_cash_transfer",
+					"protocol": "http",
+					"host": [
+						"nm-cash-allocation-service",
+						"prod",
+						"nutmeg",
+						"co",
+						"uk"
+					],
+					"path": [
+						"operations",
+						"apply_cash_transfer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PROD Call Interest Postings on nm-client-money-accounting-service",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const environmentVariables = {",
+							"    \"dev\" : {",
+							"        \"authUrl\" : \"https://api.dev.nutmeg.co.uk/users/authenticate\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_DEV\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_DEV\"",
+							"    },",
+							"    \"prod\" : {",
+							"        \"authUrl\" : \"https://nm-authentication-service.prod.nutmeg.co.uk/users/authenticate_employee\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_PROD\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_PROD\"",
+							"    }",
+							"}",
+							"",
+							"const environments = [\"dev\", \"prod\"]",
+							"",
+							"function refreshAuthToken() {",
+							"",
+							"    const postRequest = {",
+							"        url: globalVariables[\"authUrl\"],",
+							"        method: 'POST',",
+							"        header: {",
+							"            'Content-Type': 'application/json'",
+							"        },",
+							"        body: {",
+							"            mode: 'raw',",
+							"            raw: JSON.stringify({",
+							"                username: pm.globals.get(\"TOKEN_USERNAME\"),",
+							"                password: pm.globals.get(\"TOKEN_PASSWORD\"),",
+							"                market:\"gb\",",
+							"                organisation:\"nutmeg\"",
+							"            })",
+							"        }",
+							"    };",
+							"",
+							"    pm.sendRequest(postRequest, (error, response) => {",
+							"        if (error) {",
+							"            console.log(error)",
+							"        } else {",
+							"            console.log(\"Got auth token\")",
+							"            const responseBody = response.json()",
+							"            pm.globals.set(globalVariables[\"tokenExpires\"], responseBody[\"expiresOn\"])",
+							"            pm.globals.set(globalVariables[\"accessToken\"], responseBody[\"accessToken\"])",
+							"            // set access token on outgoing request",
+							"            pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + responseBody[\"accessToken\"]",
+							"            });",
+							"        }",
+							"    });",
+							"}",
+							"",
+							"function tokenIsExpired(tokenExpiryTime) {",
+							"    const currentTimeSeconds = parseInt(new Date().getTime() / 1000)",
+							"    return parseInt(tokenExpiryTime) <= currentTimeSeconds ?",
+							"        true :",
+							"        false;",
+							"}",
+							"",
+							"function isNutmegUrl() {",
+							"    return true;",
+							"}",
+							"",
+							"function getEnvironmentFromRequestUrl() {",
+							"    const url = pm.request.url.host;",
+							"",
+							"    return url.includes(\"dev\") ?",
+							"        \"dev\" :",
+							"        \"prod\";",
+							"}",
+							"",
+							"/*",
+							"* SCRIPT START",
+							"*",
+							"*/",
+							"",
+							"if (isNutmegUrl()) {",
+							"",
+							"    globalVariables = environmentVariables[getEnvironmentFromRequestUrl()]",
+							"    const tokenExpiryTime = pm.globals.get(globalVariables[\"tokenExpires\"])",
+							"",
+							"    if (tokenExpiryTime == null || isNaN(parseInt(tokenExpiryTime)) || tokenIsExpired(tokenExpiryTime)) {",
+							"        console.log(\"Token has expired or can't be read, requesting a new one\")",
+							"        refreshAuthToken()",
+							"    } else {",
+							"        console.log(\"Auth token still valid, not requesting a new one\")",
+							"         pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + pm.globals.get(globalVariables[\"accessToken\"])",
+							"            });",
+							"    }",
+							"} else {",
+							"    console.log(\"Not setting auth token as url is not nutmeg related\")",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"effectiveDate\": \"20230515\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://nm-cash-allocation-service.prod.nutmeg.co.uk/operations/apply_cash_transfer",
+					"protocol": "http",
+					"host": [
+						"nm-cash-allocation-service",
+						"prod",
+						"nutmeg",
+						"co",
+						"uk"
+					],
+					"path": [
+						"operations",
+						"apply_cash_transfer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DEV Call Interest Postings on nm-client-money-accounting-service",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const environmentVariables = {",
+							"    \"dev\" : {",
+							"        \"authUrl\" : \"https://api.dev.nutmeg.co.uk/users/authenticate\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_DEV\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_DEV\"",
+							"    },",
+							"    \"prod\" : {",
+							"        \"authUrl\" : \"https://nm-authentication-service.prod.nutmeg.co.uk/users/authenticate_employee\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_PROD\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_PROD\"",
+							"    }",
+							"}",
+							"",
+							"const environments = [\"dev\", \"prod\"]",
+							"",
+							"function refreshAuthToken() {",
+							"",
+							"    const postRequest = {",
+							"        url: globalVariables[\"authUrl\"],",
+							"        method: 'POST',",
+							"        header: {",
+							"            'Content-Type': 'application/json'",
+							"        },",
+							"        body: {",
+							"            mode: 'raw',",
+							"            raw: JSON.stringify({",
+							"                username: pm.globals.get(\"TOKEN_USERNAME\"),",
+							"                password: pm.globals.get(\"TOKEN_PASSWORD\"),",
+							"                market:\"gb\",",
+							"                organisation:\"nutmeg\"",
+							"            })",
+							"        }",
+							"    };",
+							"",
+							"    pm.sendRequest(postRequest, (error, response) => {",
+							"        if (error) {",
+							"            console.log(error)",
+							"        } else {",
+							"            console.log(\"Got auth token\")",
+							"            const responseBody = response.json()",
+							"            pm.globals.set(globalVariables[\"tokenExpires\"], responseBody[\"expiresOn\"])",
+							"            pm.globals.set(globalVariables[\"accessToken\"], responseBody[\"accessToken\"])",
+							"            // set access token on outgoing request",
+							"            pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + responseBody[\"accessToken\"]",
+							"            });",
+							"        }",
+							"    });",
+							"}",
+							"",
+							"function tokenIsExpired(tokenExpiryTime) {",
+							"    const currentTimeSeconds = parseInt(new Date().getTime() / 1000)",
+							"    return parseInt(tokenExpiryTime) <= currentTimeSeconds ?",
+							"        true :",
+							"        false;",
+							"}",
+							"",
+							"function isNutmegUrl() {",
+							"    return true;",
+							"}",
+							"",
+							"function getEnvironmentFromRequestUrl() {",
+							"    const url = pm.request.url.host;",
+							"",
+							"    return url.includes(\"dev\") ?",
+							"        \"dev\" :",
+							"        \"prod\";",
+							"}",
+							"",
+							"/*",
+							"* SCRIPT START",
+							"*",
+							"*/",
+							"",
+							"if (isNutmegUrl()) {",
+							"",
+							"    globalVariables = environmentVariables[getEnvironmentFromRequestUrl()]",
+							"    const tokenExpiryTime = pm.globals.get(globalVariables[\"tokenExpires\"])",
+							"",
+							"    if (tokenExpiryTime == null || isNaN(parseInt(tokenExpiryTime)) || tokenIsExpired(tokenExpiryTime)) {",
+							"        console.log(\"Token has expired or can't be read, requesting a new one\")",
+							"        refreshAuthToken()",
+							"    } else {",
+							"        console.log(\"Auth token still valid, not requesting a new one\")",
+							"         pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + pm.globals.get(globalVariables[\"accessToken\"])",
+							"            });",
+							"    }",
+							"} else {",
+							"    console.log(\"Not setting auth token as url is not nutmeg related\")",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://nm-client-money-accounting-service.dev.nutmeg.co.uk/interest/account-postings",
+					"protocol": "https",
+					"host": [
+						"nm-client-money-accounting-service",
+						"dev",
+						"nutmeg",
+						"co",
+						"uk"
+					],
+					"path": [
+						"interest",
+						"account-postings"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PROD call isa-transfer-payment-service",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const environmentVariables = {",
+							"    \"dev\" : {",
+							"        \"authUrl\" : \"https://api.dev.nutmeg.co.uk/users/authenticate\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_DEV\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_DEV\"",
+							"    },",
+							"    \"prod\" : {",
+							"        \"authUrl\" : \"https://nm-authentication-service.prod.nutmeg.co.uk/users/authenticate_employee\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_PROD\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_PROD\"",
+							"    }",
+							"}",
+							"",
+							"const environments = [\"dev\", \"prod\"]",
+							"",
+							"function refreshAuthToken() {",
+							"",
+							"    const postRequest = {",
+							"        url: globalVariables[\"authUrl\"],",
+							"        method: 'POST',",
+							"        header: {",
+							"            'Content-Type': 'application/json'",
+							"        },",
+							"        body: {",
+							"            mode: 'raw',",
+							"            raw: JSON.stringify({",
+							"                username: pm.globals.get(\"TOKEN_USERNAME\"),",
+							"                password: pm.globals.get(\"TOKEN_PASSWORD\"),",
+							"                market:\"gb\",",
+							"                organisation:\"nutmeg\"",
+							"            })",
+							"        }",
+							"    };",
+							"",
+							"    pm.sendRequest(postRequest, (error, response) => {",
+							"        if (error) {",
+							"            console.log(error)",
+							"        } else {",
+							"            console.log(\"Got auth token\")",
+							"            const responseBody = response.json()",
+							"            pm.globals.set(globalVariables[\"tokenExpires\"], responseBody[\"expiresOn\"])",
+							"            pm.globals.set(globalVariables[\"accessToken\"], responseBody[\"accessToken\"])",
+							"            // set access token on outgoing request",
+							"            pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + responseBody[\"accessToken\"]",
+							"            });",
+							"        }",
+							"    });",
+							"}",
+							"",
+							"function tokenIsExpired(tokenExpiryTime) {",
+							"    const currentTimeSeconds = parseInt(new Date().getTime() / 1000)",
+							"    return parseInt(tokenExpiryTime) <= currentTimeSeconds ?",
+							"        true :",
+							"        false;",
+							"}",
+							"",
+							"function isNutmegUrl() {",
+							"    return true;",
+							"}",
+							"",
+							"function getEnvironmentFromRequestUrl() {",
+							"    const url = pm.request.url.host;",
+							"",
+							"    return url.includes(\"dev\") ?",
+							"        \"dev\" :",
+							"        \"prod\";",
+							"}",
+							"",
+							"/*",
+							"* SCRIPT START",
+							"*",
+							"*/",
+							"",
+							"if (isNutmegUrl()) {",
+							"",
+							"    globalVariables = environmentVariables[getEnvironmentFromRequestUrl()]",
+							"    const tokenExpiryTime = pm.globals.get(globalVariables[\"tokenExpires\"])",
+							"",
+							"    if (tokenExpiryTime == null || isNaN(parseInt(tokenExpiryTime)) || tokenIsExpired(tokenExpiryTime)) {",
+							"        console.log(\"Token has expired or can't be read, requesting a new one\")",
+							"        refreshAuthToken()",
+							"    } else {",
+							"        console.log(\"Auth token still valid, not requesting a new one\")",
+							"         pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + pm.globals.get(globalVariables[\"accessToken\"])",
+							"            });",
+							"    }",
+							"} else {",
+							"    console.log(\"Not setting auth token as url is not nutmeg related\")",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://nm-isa-transfer-payment-service.prod.nutmeg.co.uk/transfer_records",
+					"protocol": "https",
+					"host": [
+						"nm-isa-transfer-payment-service",
+						"prod",
+						"nutmeg",
+						"co",
+						"uk"
+					],
+					"path": [
+						"transfer_records"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PROD call isa-transfer-payment-service Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const environmentVariables = {",
+							"    \"dev\" : {",
+							"        \"authUrl\" : \"https://api.dev.nutmeg.co.uk/users/authenticate\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_DEV\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_DEV\"",
+							"    },",
+							"    \"prod\" : {",
+							"        \"authUrl\" : \"https://nm-authentication-service.prod.nutmeg.co.uk/users/authenticate_employee\",",
+							"        \"tokenExpires\" : \"TOKEN_EXPIRES_PROD\",",
+							"        \"accessToken\" : \"ACCESS_TOKEN_PROD\"",
+							"    }",
+							"}",
+							"",
+							"const environments = [\"dev\", \"prod\"]",
+							"",
+							"function refreshAuthToken() {",
+							"",
+							"    const postRequest = {",
+							"        url: globalVariables[\"authUrl\"],",
+							"        method: 'POST',",
+							"        header: {",
+							"            'Content-Type': 'application/json'",
+							"        },",
+							"        body: {",
+							"            mode: 'raw',",
+							"            raw: JSON.stringify({",
+							"                username: pm.globals.get(\"TOKEN_USERNAME\"),",
+							"                password: pm.globals.get(\"TOKEN_PASSWORD\"),",
+							"                market:\"gb\",",
+							"                organisation:\"nutmeg\"",
+							"            })",
+							"        }",
+							"    };",
+							"",
+							"    pm.sendRequest(postRequest, (error, response) => {",
+							"        if (error) {",
+							"            console.log(error)",
+							"        } else {",
+							"            console.log(\"Got auth token\")",
+							"            const responseBody = response.json()",
+							"            pm.globals.set(globalVariables[\"tokenExpires\"], responseBody[\"expiresOn\"])",
+							"            pm.globals.set(globalVariables[\"accessToken\"], responseBody[\"accessToken\"])",
+							"            // set access token on outgoing request",
+							"            pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + responseBody[\"accessToken\"]",
+							"            });",
+							"        }",
+							"    });",
+							"}",
+							"",
+							"function tokenIsExpired(tokenExpiryTime) {",
+							"    const currentTimeSeconds = parseInt(new Date().getTime() / 1000)",
+							"    return parseInt(tokenExpiryTime) <= currentTimeSeconds ?",
+							"        true :",
+							"        false;",
+							"}",
+							"",
+							"function isNutmegUrl() {",
+							"    return true;",
+							"}",
+							"",
+							"function getEnvironmentFromRequestUrl() {",
+							"    const url = pm.request.url.host;",
+							"",
+							"    return url.includes(\"dev\") ?",
+							"        \"dev\" :",
+							"        \"prod\";",
+							"}",
+							"",
+							"/*",
+							"* SCRIPT START",
+							"*",
+							"*/",
+							"",
+							"if (isNutmegUrl()) {",
+							"",
+							"    globalVariables = environmentVariables[getEnvironmentFromRequestUrl()]",
+							"    const tokenExpiryTime = pm.globals.get(globalVariables[\"tokenExpires\"])",
+							"",
+							"    if (tokenExpiryTime == null || isNaN(parseInt(tokenExpiryTime)) || tokenIsExpired(tokenExpiryTime)) {",
+							"        console.log(\"Token has expired or can't be read, requesting a new one\")",
+							"        refreshAuthToken()",
+							"    } else {",
+							"        console.log(\"Auth token still valid, not requesting a new one\")",
+							"         pm.request.headers.add({",
+							"                key: \"Authorization\",",
+							"                value: \"Bearer \" + pm.globals.get(globalVariables[\"accessToken\"])",
+							"            });",
+							"    }",
+							"} else {",
+							"    console.log(\"Not setting auth token as url is not nutmeg related\")",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "OPTIONS",
+				"header": [
+					{
+						"key": "Origin",
+						"value": "*",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://nm-isa-transfer-payment-service.prod.nutmeg.co.uk/transfer_records",
+					"protocol": "https",
+					"host": [
+						"nm-isa-transfer-payment-service",
+						"prod",
+						"nutmeg",
+						"co",
+						"uk"
+					],
+					"path": [
+						"transfer_records"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

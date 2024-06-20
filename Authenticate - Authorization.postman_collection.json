@@ -1,0 +1,50 @@
+{
+	"info": {
+		"_postman_id": "17a90b91-0b42-43b1-8723-e0a14118392f",
+		"name": "Authenticate / Authorization",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "829803"
+	},
+	"item": [
+		{
+			"name": "Prod Authorization",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\":\"nicholas.wright@nutmeg.com\",\n    \"password\":\"M4a?4zKD$gFu7@n\",\n    \"market\":\"gb\",\n    \"organisation\":\"nutmeg\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://nm-authentication-service.prod.nutmeg.co.uk/users/authenticate_employee",
+					"protocol": "https",
+					"host": [
+						"nm-authentication-service",
+						"prod",
+						"nutmeg",
+						"co",
+						"uk"
+					],
+					"path": [
+						"users",
+						"authenticate_employee"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Dev Authorizatio",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
