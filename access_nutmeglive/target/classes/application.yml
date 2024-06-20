@@ -1,0 +1,10 @@
+db-nutmeglive-database: /nutmeglive
+db-nutmeglive-host: rds-read.live1000.nutmeg.co.uk
+db-nutmeglive-password: LKLbIXCFaJfKFQFRGObUKfURUbSTIRbU
+db-nutmeglive-port: 3306
+db-nutmeglive-username: nicholas.wright
+passphrase:
+private-key-path: /Users/nicholas.wright/.ssh/bastion
+ssh-host: bastion.prod.nutmeg.co.uk
+ssh-port: 22
+ssh-username: nicholas.wright
